@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e449e592-bf2c-451e-9a6e-08717f0b098e" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="efe3a056-5476-4700-b3ef-e3b02d5dd432" >
+		<file:connection workingDir="E:\" />
+	</file:config>
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="f4ed3ced-82ef-493f-9d92-7cb7097cd974" >
+		<jms:active-mq-connection username="admin" password="admin" >
+			<jms:caching-strategy >
+				<jms:no-caching />
+			</jms:caching-strategy>
+			<jms:factory-configuration brokerUrl="tcp://localhost:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<file:config name="File_Config1" doc:name="File Config" doc:id="78280d90-1f83-4926-9fc5-82a728c70774" >
+		<file:connection workingDir="D:\" />
+	</file:config>
+	<flow name="assessment2Flow" doc:id="43a73353-cbab-4236-9ea6-6e20b55e68d6" initialState="started">
+		<http:listener doc:name="Listener" doc:id="464db9f5-da84-4945-91ca-a0626927d8a2" config-ref="HTTP_Listener_config" path="/test"/>
+		<file:read doc:id="f171d863-8725-4d26-8123-2672a7619576" config-ref="File_Config1" path="D:\Pankaj\SalesJan2009.csv"/>
+		<jms:publish doc:name="Publish" doc:id="02c0c8bc-b0e7-434f-8d68-230f488daf88" config-ref="JMS_Config" destination="company"/>
+		<flow-ref doc:name="Flow Reference" doc:id="8c8f5230-73ec-4197-9567-4a5a1637f310" name="activemqfileFlow"/>
+	
+</flow>
+	<flow name="activemqfileFlow" doc:id="0a9c7ce1-47f8-4556-aba3-95bcbac81113" initialState="started">
+		<jms:consume doc:name="Consume" doc:id="5ead2c0e-b63d-40c0-a9f7-27be78affdd2" config-ref="JMS_Config" destination="company" maximumWait="100000"/>
+		<logger level="INFO" doc:name="Logger" doc:id="aaa7494c-ebf3-4279-94c4-5d7af3a23788" message="#[payload]"/>
+	</flow>
+
+</mule>
